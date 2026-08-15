@@ -5,6 +5,7 @@
 #include "input-manager.hpp"
 #include "wayfire/scene.hpp"
 #include "wayfire/signal-definitions.hpp"
+#include <wayfire/canvas-input.hpp> 
 
 #include <wayfire/debug.hpp>
 #include <wayfire/util/log.hpp>
@@ -336,6 +337,9 @@ void wf::pointer_t::send_button(wlr_pointer_button_event *ev, bool has_binding)
         return;
     }
 
+    canvas_pointer_button(ev->button, ev->state == WL_POINTER_BUTTON_STATE_PRESSED,
+            ev->time_msec);
+
     if (cursor_focus)
     {
         auto kind = get_current_grab_kind();
@@ -372,12 +376,16 @@ void wf::pointer_t::send_motion(uint32_t time_msec)
     {
         auto kind  = get_current_grab_kind();
         auto gc    = wf::get_core().get_cursor_position();
+        canvas_pointer_motion(
+                        static_cast<int32_t>(gc.x),
+                        static_cast<int32_t>(gc.y),
+                        time_msec);
         auto local = get_node_local_coords(cursor_focus.get(), gc);
 
         if (!last_focus_coords.has_value() ||
             (local.x != last_focus_coords->x) || (local.y != last_focus_coords->y))
         {
-            // NB: the pointer motion could go to a grab, which could trigger scenegraph changes, which
+            // NB: the pointer motion could go to a grab, which could trigger scenegraph changes, which     
             // trigger re-focus. We need to set the last focus coordinates early, so that we break out of
             // infinite loops.
             last_focus_coords = local;
@@ -434,6 +442,11 @@ void wf::pointer_t::handle_pointer_axis(wlr_pointer_axis_event *ev,
 
     ev->delta *= mult;
     ev->delta_discrete *= mult;
+    
+    canvas_pointer_axis(
+        ev->orientation,
+        ev->delta,
+        ev->time_msec);
 
     if (cursor_focus)
     {

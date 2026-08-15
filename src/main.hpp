@@ -12,4 +12,5 @@ extern struct wf_runtime_config
 namespace wf
 {
 wf::log::color_mode_t detect_color_mode();
+int wayfire_initialize_and_run(int argc, char **argv);
 }

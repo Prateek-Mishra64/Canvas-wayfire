@@ -277,7 +277,10 @@ void parse_extended_debugging(const std::vector<std::string>& categories)
 // }
 // }
 //
-int main(int argc, char *argv[])
+
+namespace wf {
+
+int wayfire_initialize_and_run(int argc, char *argv[])
 {
     wf::log::log_level_t log_level = wf::log::LOG_LEVEL_INFO;
     struct option opts[] = {
@@ -382,7 +385,7 @@ int main(int argc, char *argv[])
     }
 
     /* Don't crash on SIGPIPE, e.g., when doing IPC to a client whose fd has been closed. */
-    signal(SIGPIPE, SIG_IGN);
+    ::signal(SIGPIPE, SIG_IGN);
 
     wf::log::initialize_logging(std::cout, log_level, wf::detect_color_mode());
 
@@ -392,13 +395,13 @@ int main(int argc, char *argv[])
 #ifdef PRINT_TRACE
     /* In case of crash, print the stacktrace for debugging.
      * However, if ASAN is enabled, we'll get better stacktrace from there. */
-    signal(SIGSEGV, signal_handler);
-    signal(SIGFPE, signal_handler);
-    signal(SIGABRT, signal_handler);
+    ::signal(SIGSEGV, signal_handler);
+    ::signal(SIGFPE, signal_handler);
+    ::signal(SIGABRT, signal_handler);
 #endif
 
-    signal(SIGINT, signal_handler);
-    signal(SIGTERM, signal_handler);
+    ::signal(SIGINT, signal_handler);
+    ::signal(SIGTERM, signal_handler);
 
     std::set_terminate([] ()
     {
@@ -519,8 +522,7 @@ int main(int argc, char *argv[])
     {
         LOGI("Got SIGTERM, shutting down");
     }
-
-    wf::compositor_core_impl_t::deallocate_core();
-    LOGI("Shutdown successful!");
+ 
     return EXIT_SUCCESS;
+}
 }

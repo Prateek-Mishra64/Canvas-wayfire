@@ -4,6 +4,9 @@ wayfire_sources = ['geometry.cpp',
                    'util.cpp',
                    'render.cpp',
 
+                   'canvas-input.cpp',
+                   'main.cpp',
+
                    'core/window-manager.cpp',
                    'core/output-layout.cpp',
                    'core/plugin-loader.cpp',
@@ -120,6 +123,9 @@ git_branch_info = vcs_tag(
     command: git.found() ? [git, 'rev-parse', '--abbrev-ref', 'HEAD'] : ['echo', 'unknown'],
     fallback: 'unknown')
 
+wayfire_sources += git_commit_info
+wayfire_sources += git_branch_info
+
 # First build a static library of all sources, so that it can be reused
 # in tests
 libwayfire_sta = static_library('libwayfire', wayfire_sources,
@@ -128,17 +134,22 @@ libwayfire_sta = static_library('libwayfire', wayfire_sources,
     cpp_args: debug_arguments,
     install: false, cpp_pch: 'pch/pch.h')
 
-libwayfire = declare_dependency(link_whole: libwayfire_sta,
+libwayfire = shared_library(
+    'wayfire',
+    wayfire_sources,
+    dependencies: [wayfire_dependencies, json.as_link_whole()],
+    include_directories: [wayfire_conf_inc, wayfire_api_inc],
+    cpp_args: debug_arguments,
+    install: true,
+    cpp_pch: 'pch/pch.h'
+)
+
+libwayfire_dep = declare_dependency(link_with: libwayfire,
     include_directories: [wayfire_conf_inc, wayfire_api_inc],
     dependencies: wayfire_dependencies)
 
 tests_include_dirs = include_directories('.')
 
-# Generate main executable
-executable('wayfire', ['main.cpp', git_commit_info, git_branch_info],
-    dependencies: libwayfire,
-    install: true,
-    cpp_args: debug_arguments)
 
 shared_module('default-config-backend', 'default-config-backend.cpp',
     dependencies: wayfire_dependencies,
@@ -171,6 +182,7 @@ endif
 
 pkgconfig = import('pkgconfig')
 pkgconfig.generate(
+    libwayfire,
     version:      meson.project_version(),
     filebase:     meson.project_name(),
     name:         meson.project_name(),

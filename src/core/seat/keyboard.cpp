@@ -15,6 +15,7 @@
 #include "seat-impl.hpp"
 #include "wayfire/signal-definitions.hpp"
 #include <wayfire/config-backend.hpp>
+#include <wayfire/canvas-input.hpp>
 
 void wf::keyboard_t::setup_listeners()
 {
