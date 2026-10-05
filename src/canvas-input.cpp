@@ -31,7 +31,7 @@ void canvas_shutdown()
     compositor_core_impl_t::deallocate_core();
 }
 
-bool canvas_pointer_position(int32_t *x, int32_t *y)
+bool canvas_cursor_position(int32_t *x, int32_t *y)
 {
     if (!x || !y)
         return false;
@@ -46,7 +46,7 @@ void canvas_pointer_motion(int32_t x, int32_t y, uint32_t time)
     pointer_state.x = x;
     pointer_state.y = y;
     pointer_state.time = time;
-}
+    }
 
 void canvas_pointer_button(uint32_t button, bool pressed, uint32_t time)
 {

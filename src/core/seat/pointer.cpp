@@ -278,7 +278,7 @@ wf::input_grab_kind_t wf::pointer_t::get_current_grab_kind() const
 }
 
 /* ----------------------- Input event processing --------------------------- */
-void wf::pointer_t::handle_pointer_button(wlr_pointer_button_event *ev,
+/*void wf::pointer_t::handle_pointer_button(wlr_pointer_button_event *ev,
     input_event_processing_mode_t mode)
 {
     seat->priv->break_mod_bindings();
@@ -289,8 +289,6 @@ void wf::pointer_t::handle_pointer_button(wlr_pointer_button_event *ev,
         count_pressed_buttons++;
         if (count_pressed_buttons == 1)
         {
-            /* Focus only the first click, since then we also start an implicit
-             * grab, and we don't want to suddenly change the output */
             auto gc     = seat->priv->cursor->get_cursor_position();
             auto output = wf::get_core().output_layout->find_closest_output(gc);
             seat->focus_output(output);
@@ -308,6 +306,18 @@ void wf::pointer_t::handle_pointer_button(wlr_pointer_button_event *ev,
     {
         check_implicit_grab();
     }
+}*/
+
+void wf::pointer_t::handle_pointer_button(
+    wlr_pointer_button_event *ev,
+    input_event_processing_mode_t mode)
+{
+    canvas_pointer_button(
+        ev->button,
+        ev->state == WL_POINTER_BUTTON_STATE_PRESSED,
+        ev->time_msec);
+
+    return;
 }
 
 void wf::pointer_t::check_implicit_grab()
@@ -372,15 +382,16 @@ void wf::pointer_t::send_button(wlr_pointer_button_event *ev, bool has_binding)
 
 void wf::pointer_t::send_motion(uint32_t time_msec)
 {
-    if (cursor_focus)
-    {
-        auto kind  = get_current_grab_kind();
-        auto gc    = wf::get_core().get_cursor_position();
+    auto gc    = wf::get_core().get_cursor_position();
         canvas_pointer_motion(
                         static_cast<int32_t>(gc.x),
                         static_cast<int32_t>(gc.y),
                         time_msec);
-        auto local = get_node_local_coords(cursor_focus.get(), gc);
+        
+    if (cursor_focus)
+    {
+        auto kind  = get_current_grab_kind();
+                auto local = get_node_local_coords(cursor_focus.get(), gc);
 
         if (!last_focus_coords.has_value() ||
             (local.x != last_focus_coords->x) || (local.y != last_focus_coords->y))

@@ -55,17 +55,8 @@ subdir('common')
 plugins = [
   'ipc',
   'protocols',
-  'vswitch',
-  'wobbly',
-  'grid',
   'decor',
-  'animate',
-  'cube',
-  'window-rules',
   'blur',
-  'tile',
-  'wm-actions',
-  'scale',
   'single_plugins',
   'ipc-rules',
 ]
